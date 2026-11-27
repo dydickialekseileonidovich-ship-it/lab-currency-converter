@@ -1,0 +1,199 @@
+openapi: 3.0.3
+info:
+  title: API Портала стипендиальных заявок
+  description: Спецификация программного интерфейса для подачи, модерации и отслеживания заявок на получение стипендий вуза.
+  version: 1.0.0
+  contact:
+    name: Дудицкий А. Л. (Вариант 10)
+    email: student@university.by
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Локальный сервер разработки
+
+paths:
+  /applications:
+    post:
+      summary: Подача новой заявки на стипендию
+      description: Позволяет аутентифицированному студенту создать новую заявку с указанием категории стипендии.
+      operationId: createApplication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplicationCreateRequest'
+      responses:
+        '201':
+          description: Заявка успешно зарегистрирована
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationResponse'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+
+    get:
+      summary: Получение списка заявок с фильтрацией
+      description: Возвращает реестр заявок. Студент видит только свои заявки, сотрудник деканата/администратор — все заявки с фильтрацией по статусу.
+      operationId: listApplications
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/ApplicationStatus'
+          description: Фильтр по статусу заявки
+        - name: student_card
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Номер студенческого билета
+      responses:
+        '200':
+          description: Список заявок
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ApplicationResponse'
+
+  /applications/{id}:
+    get:
+      summary: Получение детальной информации о заявке
+      operationId: getApplicationById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Детальная информация о заявке
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationResponse'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+
+  /applications/{id}/status:
+    patch:
+      summary: Изменение статуса заявки сотрудником деканата
+      description: Переводит заявку в статус утверждена, отклонена или отправлена на доработку. Доступно только роли ADMIN / STAFF.
+      operationId: updateApplicationStatus
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StatusUpdateRequest'
+      responses:
+        '200':
+          description: Статус успешно обновлён
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationResponse'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+
+components:
+  schemas:
+    ApplicationStatus:
+      type: string
+      enum: [DRAFT, SUBMITTED, IN_REVIEW, NEEDS_INFO, APPROVED, REJECTED]
+      example: SUBMITTED
+
+    ScholarshipType:
+      type: string
+      enum: [ACADEMIC, SOCIAL, INCREASED_RESEARCH, INCREASED_SPORT]
+      example: ACADEMIC
+
+    ApplicationCreateRequest:
+      type: object
+      required:
+        - student_name
+        - student_card
+        - scholarship_type
+      properties:
+        student_name:
+          type: string
+          example: Дудицкий Алексей Леонидович
+        student_card:
+          type: string
+          example: 10702120
+        scholarship_type:
+          $ref: '#/components/schemas/ScholarshipType'
+        comments:
+          type: string
+          example: Подаю документы на повышенную за победу в олимпиаде.
+
+    StatusUpdateRequest:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          $ref: '#/components/schemas/ApplicationStatus'
+        reviewer_comment:
+          type: string
+          example: Документы проверены, средний балл подтверждён деканатом.
+
+    ApplicationResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 12
+        student_name:
+          type: string
+          example: Дудицкий Алексей Леонидович
+        student_card:
+          type: string
+          example: 10702120
+        scholarship_type:
+          $ref: '#/components/schemas/ScholarshipType'
+        status:
+          $ref: '#/components/schemas/ApplicationStatus'
+        reviewer_comment:
+          type: string
+          nullable: true
+          example: Принято к начислению.
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-11-24T10:00:00Z"
+
+  responses:
+    400BadRequest:
+      description: Неверные параметры запроса или недопустимый переход статуса
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: Недопустимый статус
+    404NotFound:
+      description: Заявка с указанным ID не найдена
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: Заявка не найдена
