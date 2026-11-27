@@ -45,7 +45,7 @@
 ```bash
 python3 -m venv venv
 source venv/bin/activate
-pip install pytest pytest-bdd
+pip install -r requirements.txt
 
 # Запуск юнит-тестов
 pytest test_unit.py -v

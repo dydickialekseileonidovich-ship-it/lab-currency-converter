@@ -3,13 +3,18 @@
 **Вариант:** 10  
 **Тема:** Проверка сложности пароля (score)
 
+[![CI/CD Password Strength Pipeline](https://github.com/dydickialekseileonidovich-ship-it/lab-currency-converter/actions/workflows/ci.yml/badge.svg)](https://github.com/dydickialekseileonidovich-ship-it/lab-currency-converter/actions/workflows/ci.yml)
+
+> **Постановка задачи (Вариант 10):** Проверка сложности пароля (score). Модуль оценки силы пароля и текстовых рекомендаций. Тесты шкал. Пайплайн test + deploy документации на Pages.
+
 ---
 
 ## 1. Архитектура проекта
 - `src/password_checker.py`: Модуль скоринга сложности пароля.
 - `tests/test_password_checker.py`: Unit-тесты граничных условий и шкал.
-- `.github/workflows/ci.yml`: Конфигурация пайплайна CI/CD GitHub Actions.
-- `docs/index.md`: Пользовательская документация, публикуемая на Pages.
+- `requirements.txt`: Зависимости для тестирования и линтинга (`pytest`, `pytest-cov`, `flake8`).
+- `../.github/workflows/ci.yml` (и локальная копия `.github/workflows/ci.yml`): Конфигурация пайплайна CI/CD GitHub Actions.
+- `docs/index.md`: Пользовательская документация, публикуемая как артефакт и на GitHub Pages (`gh-pages`).
 
 ---
 

@@ -3,6 +3,8 @@
 **Вариант:** 10  
 **Тема:** Прайс мини-типографии при вузе
 
+> **Постановка задачи (Вариант 10):** Прайс мини-типографии при вузе. Прайс-лист услуг. Ветка `promo-discount` вносит скидочные цены; ветка `new-services` добавляет услуги и правит соседние строки прайса. Разрешите конфликт и выложите репозиторий.
+
 ---
 
 ## 1. Сценарий работы
@@ -79,7 +81,9 @@ git merge new-services
 git add price.md
 git commit -m "merge: объединение новых услуг с сохранением студенческих промо-скидок"
 
-# Публикация в удалённый репозиторий:
-git remote add origin https://github.com/duditskiy/printing-service-price.git
-git push -u origin main
+# Публикация в удалённый репозиторий (включая рабочие ветки):
+git remote add origin https://github.com/dydickialekseileonidovich-ship-it/lab-currency-converter.git
+git push -u origin main promo-discount new-services
 ```
+
+В истории данного репозитория сохранены реальные ветки `promo-discount`, `new-services` и merge-коммит разрешения конфликта в файле `Lab_5_Git_Repo_Conflicts/price.md`.

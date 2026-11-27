@@ -1,0 +1,82 @@
+name: CI/CD Password Strength Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Lab_6_CICD_Pipeline
+
+    steps:
+    - name: Checkout кода
+      uses: actions/checkout@v4
+
+    - name: Настройка Python 3.11
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+
+    - name: Установка зависимостей
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Проверка линтером (Flake8)
+      run: |
+        flake8 src/ tests/ --max-line-length=120
+
+    - name: Запуск автоматических тестов
+      run: |
+        pytest tests/ -v --cov=src --cov-report=term-missing
+
+  deploy-docs:
+    needs: test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Lab_6_CICD_Pipeline
+
+    steps:
+    - name: Checkout кода
+      uses: actions/checkout@v4
+
+    - name: Подготовка документации для публикации
+      run: |
+        mkdir -p public
+        cp -r docs/* public/
+        cat << 'EOF' > public/index.html
+        <!DOCTYPE html>
+        <html lang="ru">
+        <head><meta charset="utf-8"><title>Password Strength Analyzer — Документация</title></head>
+        <body>
+          <h1>Password Strength Analyzer (Вариант 10)</h1>
+          <p>Студент: Дудицкий А. Л.</p>
+          <p>Статус CI: автотесты и линтер пройдены успешно.</p>
+          <p><a href="index.md">Открыть описание шкалы оценки (index.md)</a></p>
+        </body>
+        </html>
+        EOF
+
+    - name: Сохранение артефакта документации
+      uses: actions/upload-artifact@v4
+      with:
+        name: password-checker-docs
+        path: Lab_6_CICD_Pipeline/public
+
+    - name: Деплой на GitHub Pages (ветка gh-pages)
+      uses: peaceiris/actions-gh-pages@v4
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./Lab_6_CICD_Pipeline/public
